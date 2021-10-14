@@ -11,9 +11,10 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+	"github.com/gofiber/fiber/v2/middleware/cors"
 )
 
-const redirect_url string = "http://127.0.0.1:3000/auth"
+const redirect_url string = "http://127.0.0.1:3001"
 
 type AuthResponse struct { // AuthResponse has other fields, but for now we only use one
 	AccessToken string `json:"access_token"`
@@ -65,6 +66,7 @@ func main() {
 
 	app := fiber.New()
 
+	app.Use(cors.New())// Or extend your config for customization
 	// Default encrypted cookie middleware config
 	app.Use(encryptcookie.New(encryptcookie.Config{ // this re-creates keys each time
 		Key: encryptcookie.GenerateKey()})) // later we should use a random, but stable value
@@ -84,9 +86,9 @@ func main() {
 	})
 
 	// Get code and trade it for auth token
-	app.Get("/auth", func(c *fiber.Ctx) error {
-		// Capture 42 redirect with auth code in query
-		code := c.Query("code")
+	app.Post("/auth", func(c *fiber.Ctx) error {
+		// Capture 42 redirect with auth code in Body
+		code := string(c.Body())
 		if code == "" {
 			return c.SendString("Please get back with the code")
 		}
@@ -105,13 +107,6 @@ func main() {
 
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
 
-		return c.SendString("Auth successful! Try it out: <a href=\"/getMe\">Get my info</a>")
-	})
-
-	// A route that just returns /me from 42 api with our cookie token
-	app.Get("/getMe", func(c *fiber.Ctx) error {
-
-		// Get token back from encrypted cookies
 		token := c.Cookies("42session")
 		if token == "" {
 			return c.SendString("Please log in!")

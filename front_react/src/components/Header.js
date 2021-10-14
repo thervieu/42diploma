@@ -1,9 +1,22 @@
-import { User } from '../App'
+const uuid = require('uuid');
+
+async function Login() {
+    let STATE = uuid.v4();
+    let REDIRECT_URL = 'http://127.0.0.1:3001';
+    let CLIENT_ID;
+    console.log("process.env");
+    console.log(process.env);
+    if (process.env.REACT_APP_CLIENT_ID)
+        CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
+    else
+        throw new Error("CLIENT_ID environment variable is not set");
+    window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URL}&scope=public&state=${STATE}&response_type=code`;
+}
 
 export default function Header(props) {
     const user = props.user;
 
     if (user === null)
-        return <button onClick={() => props.setUser(new User('1', 'thervieu', '10.02'))}>Sign in</button>
+        return <button onClick={Login}>Sign in</button>
     return <button onClick={() => props.setUser(null)}>Sign out</button>
 }

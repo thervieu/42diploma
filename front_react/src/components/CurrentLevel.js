@@ -1,6 +1,4 @@
-import { User } from '../App'
-
-export default function UserComponent(props) {
+export default function CurrentLevel(props) {
     const user = props.user;
 
     return (
