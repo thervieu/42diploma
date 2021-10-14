@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -11,7 +12,6 @@ import (
 )
 
 const redirect_url string = "http://127.0.0.1:3000/auth"
-const success_redirect_url string = "http://127.0.0.1:3000/success"
 
 func main() {
 	CLIENT_ID := os.Getenv("CLIENT_ID")
@@ -47,21 +47,28 @@ func main() {
 		}
 
 		resp, err := http.PostForm("https://api.intra.42.fr/oauth/token",
-			url.Values{"grant_type": {"authorization_code"}, "client_id": {CLIENT_ID}, "client_secret": {CLIENT_SECRET}, "code": {code}, "redirect_uri": {success_redirect_url}, "state": {"1234"}})
+			url.Values{
+				"grant_type":    {"authorization_code"},
+				"client_id":     {CLIENT_ID},
+				"client_secret": {CLIENT_SECRET},
+				"code":          {code},
+				"redirect_uri":  {redirect_url},
+				"state":         {"1234"}})
 
 		if err != nil {
 			fmt.Print("err: ", err)
 			c.SendString("42 api call failed")
 		}
-		fmt.Print(resp)
+		//We Read the response body on the line below.
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		//Convert the body to type string
+		sb := string(body)
+		log.Print(sb) // We get the access token here, need to read as json
 
 		return c.SendString(fmt.Sprint("Your code is: ", code))
-	})
-
-	// A route for success
-	app.Get("/success", func(c *fiber.Ctx) error {
-		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
-		return c.SendString("Yay!!")
 	})
 
 	app.Listen(":3000")
