@@ -34,13 +34,9 @@ async function process42ApiRedirect(code){
     },
     body: JSON.stringify(data),
   });
-  console.log("response");
-  console.log(response);
   if (!response.ok)
     return null;
   const jsonData = await response.json();
-  console.log("jsonData");
-  console.log(jsonData);
   return jsonData;
 }
 
@@ -48,7 +44,7 @@ async function set42User(setUser, setProjectsDone, code) {
   let authUser = await process42ApiRedirect(code);
 
   if (authUser) {
-    setUser(authUser.user);
+    setUser(new User(authUser.id, authUser.login, authUser.cursus_users[1].level));
     setProjectsDone(authUser.projects);
   }
 }
@@ -65,8 +61,6 @@ function App() {
 
     // if we catch an auth redirect from 42 api
     let code = searchParams.get("code");
-    console.log('code');
-    console.log(code);
     if (code) {
       set42User(setUser, setProjectsDone, code);
       history.replace("/");

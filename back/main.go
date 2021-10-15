@@ -88,13 +88,16 @@ func main() {
 	// Get code and trade it for auth token
 	app.Post("/auth", func(c *fiber.Ctx) error {
 		// Capture 42 redirect with auth code in Body
-		code := string(c.Body())
-		if code == "" {
-			return c.SendString("Please get back with the code")
+		payload := struct {
+			Code  string `json:"code"`
+		}{}
+	
+		if err := c.BodyParser(&payload); err != nil {
+			return err
 		}
-
+	
 		// Exchange the code for an auth token
-		authToken, err := getAuthToken(CLIENT_ID, CLIENT_SECRET, code)
+		authToken, err := getAuthToken(CLIENT_ID, CLIENT_SECRET, payload.Code)
 
 		if err != nil {
 			return c.SendString("42 api call failed")
@@ -107,11 +110,6 @@ func main() {
 
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
 
-		token := c.Cookies("42session")
-		if token == "" {
-			return c.SendString("Please log in!")
-		}
-
 		// Get 'me' from 42 api
 		client := &http.Client{}
 		req, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
@@ -120,7 +118,7 @@ func main() {
 			return c.SendString("Couldn't create request")
 		}
 
-		req.Header.Add("Authorization", fmt.Sprint("Bearer ", token))
+		req.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
 
 		resp, err := client.Do(req)
 
