@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	// "strconv"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+    "github.com/imdario/mergo"
 )
 
 const redirect_url string = "http://127.0.0.1:3001"
@@ -133,63 +134,73 @@ func main() {
 		if err != nil {
 			return c.SendString("Couldn't read 42 api response")
 		}
-		
-		// totalResponse := string("")
-		// fmt.Println("TOKEN", authToken)
-		// for i := 5; i < 12; i++ {
-		// 	url := "https://api.intra.42.fr/v2/cursus/21/projects?page=" + strconv.Itoa(i)
-		// 	fmt.Println("url =", string(url))
-		// 	reqProjects, err := http.NewRequest("GET", url, nil)
 
-		// 	if err != nil {
-		// 		return c.SendString("Couldn't create request")
-		// 	}
-
-		// 	reqProjects.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
-		// 	respProjects, err := client.Do(reqProjects)
-			
-		// 	if err != nil {
-		// 		return c.SendString("42 api request failed")
-		// 	}
-
-		// 	// Read response
-		// 	defer respProjects.Body.Close()
-		// 	bodyProjects, err := io.ReadAll(respProjects.Body)
-
-		// 	if err != nil { // don't forget handle errors
-
-		// 		return c.SendString("Couldn't Read response")
-		// 	}
-		// 	// fmt.Println("bodyProjects =", string(bodyProjects))
-		// 	// fmt.Println("")
-		// 	totalResponse += string(bodyProjects)
-		// }
-		
-		/*
-		fmt.Println("totalResponse =", string(totalResponse))
 		projects := struct {
 			Items []struct {
 				Id string `json:"id"`
 				Name string `json:"slug"`
-				Difficulty string `json:"difficulty"`
-			} `json:"items"`
+			}
+		}{}
+		
+		totalProjects := struct {
+			Items []struct {
+				Id string `json:"id"`
+				Name string `json:"slug"`
+			}
 		}{}
 
-		err2 := json.Unmarshal(bodyProjects, &projects.Items)
-		fmt.Println("projects")
-		fmt.Println(projects)
-		fmt.Println("projects above")
-		if err2 != nil { // don't forget handle errors
+		fmt.Println("TOKEN", authToken)
+		for i := 5; i < 12; i++ {
+			url := "https://api.intra.42.fr/v2/cursus/21/projects?page=" + strconv.Itoa(i)
+			fmt.Println("url =", string(url))
+			reqProjects, err := http.NewRequest("GET", url, nil)
 
-			return c.SendString("Couldn't unmarshall response")
+			if err != nil {
+				return c.SendString("Couldn't create request")
+			}
+
+			reqProjects.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
+			respProjects, err := client.Do(reqProjects)
+			
+			if err != nil {
+				return c.SendString("42 api request failed")
+			}
+
+			// Read response
+			defer respProjects.Body.Close()
+			bodyProjects, err := io.ReadAll(respProjects.Body)
+
+			if err != nil { // don't forget handle errors
+
+				return c.SendString("Couldn't Read response")
+			}
+			
+			err2 := json.Unmarshal(bodyProjects, &projects.Items)
+
+			fmt.Println("projects")
+			fmt.Println(projects)
+			fmt.Println("projects above")
+			
+			if err2 != nil { // don't forget handle errors
+
+				return c.SendString("Couldn't unmarshall response")
+			}
+			fmt.Println("here ???")
+
+			for p := range projects.Items {
+				fmt.Printf("Project id = %s", projects.Items[p].Id)
+				fmt.Println()
+				fmt.Printf("Project Name = %s", projects.Items[p].Name)
+				fmt.Println()
+			}
+
+			mergo.Merge(&totalProjects.Items, projects.Items)
 		}
-		for p := range projects.Items {
-			fmt.Printf("Project id = %s", projects.Items[p].Id)
-			fmt.Println()
-			fmt.Printf("Project Name = %s", projects.Items[p].Name)
-			fmt.Println()
-		}
-		*/
+		
+		fmt.Println("totalResponse  ok")
+		
+
+		
 	
 		// Show the primitive json
 		return c.SendString(string(bodyMe))
