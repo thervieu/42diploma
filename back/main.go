@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	// "strconv"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
@@ -132,53 +133,63 @@ func main() {
 		if err != nil {
 			return c.SendString("Couldn't read 42 api response")
 		}
-
-		// reqProjects, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/projects", nil)
-
-		// if err != nil {
-		// 	return c.SendString("Couldn't create request")
-		// }
-
-		// reqProjects.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
-		// respProjects, err := client.Do(reqProjects)
 		
-		// if err != nil {
-		// 	return c.SendString("42 api request failed")
+		// totalResponse := string("")
+		// fmt.Println("TOKEN", authToken)
+		// for i := 5; i < 12; i++ {
+		// 	url := "https://api.intra.42.fr/v2/cursus/21/projects?page=" + strconv.Itoa(i)
+		// 	fmt.Println("url =", string(url))
+		// 	reqProjects, err := http.NewRequest("GET", url, nil)
+
+		// 	if err != nil {
+		// 		return c.SendString("Couldn't create request")
+		// 	}
+
+		// 	reqProjects.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
+		// 	respProjects, err := client.Do(reqProjects)
+			
+		// 	if err != nil {
+		// 		return c.SendString("42 api request failed")
+		// 	}
+
+		// 	// Read response
+		// 	defer respProjects.Body.Close()
+		// 	bodyProjects, err := io.ReadAll(respProjects.Body)
+
+		// 	if err != nil { // don't forget handle errors
+
+		// 		return c.SendString("Couldn't Read response")
+		// 	}
+		// 	// fmt.Println("bodyProjects =", string(bodyProjects))
+		// 	// fmt.Println("")
+		// 	totalResponse += string(bodyProjects)
 		// }
+		
+		/*
+		fmt.Println("totalResponse =", string(totalResponse))
+		projects := struct {
+			Items []struct {
+				Id string `json:"id"`
+				Name string `json:"slug"`
+				Difficulty string `json:"difficulty"`
+			} `json:"items"`
+		}{}
 
-		// // Read response
-		// defer respProjects.Body.Close()
-		// bodyProjects, err := io.ReadAll(respProjects.Body)
+		err2 := json.Unmarshal(bodyProjects, &projects.Items)
+		fmt.Println("projects")
+		fmt.Println(projects)
+		fmt.Println("projects above")
+		if err2 != nil { // don't forget handle errors
 
-		// if err != nil { // don't forget handle errors
-
-		// 	return c.SendString("Couldn't Read response")
-		// }
-		// fmt.Println("bodyProjects =", string(bodyProjects))
-		// fmt.Println("")
-
-		// projects := struct {
-		// 	Items []struct {
-		// 		Id string `json:"id"`
-		// 		Name string `json:"slug"`
-		// 		Difficulty string `json:"difficulty"`
-		// 	} `json:"items"`
-		// }{}
-
-		// err2 := json.Unmarshal(bodyProjects, &projects.Items)
-		// fmt.Println("projects")
-		// fmt.Println(projects)
-		// fmt.Println("projects above")
-		// if err2 != nil { // don't forget handle errors
-
-		// 	return c.SendString("Couldn't unmarshall response")
-		// }
-		// for p := range projects.Items {
-		// 	fmt.Printf("Project id = %s", projects.Items[p].Id)
-		// 	fmt.Println()
-		// 	fmt.Printf("Project Name = %s", projects.Items[p].Name)
-		// 	fmt.Println()
-		// }
+			return c.SendString("Couldn't unmarshall response")
+		}
+		for p := range projects.Items {
+			fmt.Printf("Project id = %s", projects.Items[p].Id)
+			fmt.Println()
+			fmt.Printf("Project Name = %s", projects.Items[p].Name)
+			fmt.Println()
+		}
+		*/
 	
 		// Show the primitive json
 		return c.SendString(string(bodyMe))
