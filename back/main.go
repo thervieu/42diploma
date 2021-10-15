@@ -112,30 +112,76 @@ func main() {
 
 		// Get 'me' from 42 api
 		client := &http.Client{}
-		req, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
+		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
 
 		if err != nil {
 			return c.SendString("Couldn't create request")
 		}
 
-		req.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
-
-		resp, err := client.Do(req)
+		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
+		respMe, err := client.Do(reqMe)
 
 		if err != nil {
 			return c.SendString("42 api request failed")
 		}
 
 		// Read response
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
+		defer respMe.Body.Close()
+		bodyMe, err := io.ReadAll(respMe.Body)
 
 		if err != nil {
 			return c.SendString("Couldn't read 42 api response")
 		}
 
+		// reqProjects, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/projects", nil)
+
+		// if err != nil {
+		// 	return c.SendString("Couldn't create request")
+		// }
+
+		// reqProjects.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
+		// respProjects, err := client.Do(reqProjects)
+		
+		// if err != nil {
+		// 	return c.SendString("42 api request failed")
+		// }
+
+		// // Read response
+		// defer respProjects.Body.Close()
+		// bodyProjects, err := io.ReadAll(respProjects.Body)
+
+		// if err != nil { // don't forget handle errors
+
+		// 	return c.SendString("Couldn't Read response")
+		// }
+		// fmt.Println("bodyProjects =", string(bodyProjects))
+		// fmt.Println("")
+
+		// projects := struct {
+		// 	Items []struct {
+		// 		Id string `json:"id"`
+		// 		Name string `json:"slug"`
+		// 		Difficulty string `json:"difficulty"`
+		// 	} `json:"items"`
+		// }{}
+
+		// err2 := json.Unmarshal(bodyProjects, &projects.Items)
+		// fmt.Println("projects")
+		// fmt.Println(projects)
+		// fmt.Println("projects above")
+		// if err2 != nil { // don't forget handle errors
+
+		// 	return c.SendString("Couldn't unmarshall response")
+		// }
+		// for p := range projects.Items {
+		// 	fmt.Printf("Project id = %s", projects.Items[p].Id)
+		// 	fmt.Println()
+		// 	fmt.Printf("Project Name = %s", projects.Items[p].Name)
+		// 	fmt.Println()
+		// }
+	
 		// Show the primitive json
-		return c.SendString(string(body))
+		return c.SendString(string(bodyMe))
 	})
 
 	app.Listen(":3000")
