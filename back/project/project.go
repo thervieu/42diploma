@@ -36,7 +36,7 @@ func GetProjects(c *fiber.Ctx) error {
 }
 
 func SaveProjects(c *fiber.Ctx) error {
-	projects := new([]Projects)
+	projects := new([]Project)
 	if err := c.BodyParser(projects); err != nil {
 		return c.Status(500).SendString(err.Error())
 	}
