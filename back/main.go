@@ -86,6 +86,10 @@ func getAuthTokenServer(CLIENT_ID string, CLIENT_SECRET string) (string, error) 
 }
 
 func main() {
+	e := os.Remove("gorm.db")
+    if e != nil {
+        log.Fatal(e)
+    }
 	CLIENT_ID := os.Getenv("CLIENT_ID")
 	if CLIENT_ID == "" {
 		log.Fatal("Please set the CLIENT_ID env variable to your 42 API client ID")

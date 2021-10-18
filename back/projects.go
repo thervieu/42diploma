@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 	"net/http"
 	"strconv"
 
@@ -16,10 +17,22 @@ var err error
 
 const DNS = "root:admin@tcp(127.0.0.1:3306)/godb?charset=utf8mb4&parseTime=True&loc=Local"
 
-type Project struct {
+type ProjectSessions struct {
+	ProjectID		 int		   `json:"project_id"`
+	ID               int           `json:"id"`
+	Difficulty       int           `json:"difficulty"`
+	UpdatedAt        time.Time     `json:"updated_at"`
+}
+type ProjectInit struct {
 	ID              int               `json:"id"`
 	Name            string            `json:"name"`
 	Slug            string            `json:"slug"`
+	ProjectSessions []ProjectSessions `json:"project_sessions";gorm:"foreignkey:ProjectID"`
+}
+type Project struct {
+	ID              int               `json:"id"`
+	Slug            string            `json:"slug"`
+	XP				int				  `json:"xp"`
 }
 
 func InitialMigration() {
@@ -71,11 +84,11 @@ func getPage(authToken string, baseUrl string, page int) (*http.Response, error)
 
 // Get all projects from 42 api
 func initProjects(authToken string) ([]Project, error) {
-
+	
 	baseUrl := "https://api.intra.42.fr/v2/cursus/21/projects"
 
-	var allProjects []Project
-	var p []Project
+	var allProjects []ProjectInit
+	var p []ProjectInit
 
 	i := 1
 
@@ -109,15 +122,38 @@ func initProjects(authToken string) ([]Project, error) {
 		allProjects = append(allProjects, p...)
 	}
 
-	allKeys := make(map[Project]bool)
-	list := []Project{}
-	for _, item := range allProjects {
-		if _, value := allKeys[item]; !value {
-			allKeys[item] = true
-			list = append(list, item)
+	var savedProjects []Project
+	for o := 0 ; o < len(allProjects) ; o++ {
+		fmt.Println("o = " + string(o))
+		fmt.Println(allProjects[o])
+		xp := 0
+		first := true
+		allPS := allProjects[o].ProjectSessions
+		var last_updated time.Time
+		for ps := 0 ; ps < len(allPS) ; ps++ {
+			if first {
+				last_updated = allPS[ps].UpdatedAt
+				xp = allPS[ps].Difficulty
+				first = false
+			} else {
+				if allPS[ps].UpdatedAt.After(last_updated) {
+					last_updated = allPS[ps].UpdatedAt
+					xp = allPS[ps].Difficulty
+				}
+			}
+		}
+		if xp != 0 {
+			var pSave Project
+			pSave.ID = allProjects[o].ID
+			pSave.Slug = allProjects[o].Slug
+			pSave.XP = xp
+
+			fmt.Println("pSave = " + string(o))
+			fmt.Println(pSave)
+			savedProjects = append(savedProjects, pSave)
 		}
 	}
 
-	fmt.Println(allProjects)
-	return SaveProjects(list), nil
+	fmt.Println(savedProjects)
+	return SaveProjects(savedProjects), nil
 }
