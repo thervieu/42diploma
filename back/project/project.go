@@ -14,10 +14,10 @@ const DNS = "root:admin@tcp(127.0.0.1:3000)/godb?charset=utf8mb4&parseTime=True&
 
 type Project struct {
 	gorm.Model
-	Id string 'json:"id"'
-	Name string 'json:"name"'
-	Slug string 'json:"slug"'
-	Xp string 'json:"xp"'
+	Id string "json:\"id\""
+	Name string "json:\"name\""
+	Slug string "json:\"slug\""
+	Xp string "json:\"xp\""
 }
 
 func InitialMigration() {
