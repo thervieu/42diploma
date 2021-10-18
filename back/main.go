@@ -8,15 +8,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-    "github.com/imdario/mergo"
+	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 )
 
 const redirect_url string = "http://127.0.0.1:3001"
+const demo_redirect_url string = "http://127.0.0.1:3000/demoAuth"
 
 type AuthResponse struct { // AuthResponse has other fields, but for now we only use one
 	AccessToken string `json:"access_token"`
@@ -27,7 +26,8 @@ type AuthResponse struct { // AuthResponse has other fields, but for now we only
 	// CreatedAt    int    `json:"created_at"`
 }
 
-func getAuthToken(CLIENT_ID string, CLIENT_SECRET string, code string) (string, error) {
+// getAuthToken exchanges a 42 redirect code for a 42 API auth token
+func getAuthToken(CLIENT_ID string, CLIENT_SECRET string, code string, redirect_url string) (string, error) {
 	// Hit 42 api
 	resp, err := http.PostForm("https://api.intra.42.fr/oauth/token",
 		url.Values{
@@ -41,6 +41,8 @@ func getAuthToken(CLIENT_ID string, CLIENT_SECRET string, code string) (string, 
 	if err != nil {
 		return "", err
 	}
+
+	fmt.Println(resp)
 
 	// Read response as JSON
 	defer resp.Body.Close()
@@ -68,7 +70,7 @@ func main() {
 
 	app := fiber.New()
 
-	app.Use(cors.New())// Or extend your config for customization
+	app.Use(cors.New()) // Or extend your config for customization
 	// Default encrypted cookie middleware config
 	app.Use(encryptcookie.New(encryptcookie.Config{ // this re-creates keys each time
 		Key: encryptcookie.GenerateKey()})) // later we should use a random, but stable value
@@ -83,23 +85,47 @@ func main() {
 
 	// Redirect to 42 api
 	app.Get("/login", func(c *fiber.Ctx) error {
-		url := fmt.Sprint("https://api.intra.42.fr/oauth/authorize?client_id=", CLIENT_ID, "&redirect_uri=", redirect_url, "&response_type=code&scope=public&state=1234")
+		url := fmt.Sprint("https://api.intra.42.fr/oauth/authorize?client_id=", CLIENT_ID, "&redirect_uri=", demo_redirect_url, "&response_type=code&scope=public&state=1234")
 		return c.Redirect(url)
+	})
+
+	// Demo backend-only auth for easy testing
+	app.Get("/demoAuth", func(c *fiber.Ctx) error {
+		// Capture 42 redirect with auth code in Body
+		code := c.Query("code")
+		fmt.Println(code)
+
+		// Exchange the code for an auth token
+		authToken, err := getAuthToken(CLIENT_ID, CLIENT_SECRET, code, demo_redirect_url)
+
+		fmt.Println("Auth token: " + authToken)
+
+		if err != nil {
+			return c.SendString("42 api call failed")
+		}
+
+		// Save token in encrypted cookie
+		c.Cookie(&fiber.Cookie{
+			Name:  "42session",
+			Value: authToken})
+
+		// c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
+		return c.SendString(fmt.Sprint("Your token is: ", authToken))
 	})
 
 	// Get code and trade it for auth token
 	app.Post("/auth", func(c *fiber.Ctx) error {
 		// Capture 42 redirect with auth code in Body
 		payload := struct {
-			Code  string `json:"code"`
+			Code string `json:"code"`
 		}{}
-	
+
 		if err := c.BodyParser(&payload); err != nil {
 			return err
 		}
-	
+
 		// Exchange the code for an auth token
-		authToken, err := getAuthToken(CLIENT_ID, CLIENT_SECRET, payload.Code)
+		authToken, err := getAuthToken(CLIENT_ID, CLIENT_SECRET, payload.Code, redirect_url)
 
 		if err != nil {
 			return c.SendString("42 api call failed")
@@ -112,6 +138,17 @@ func main() {
 
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
 
+		return c.SendString("Success")
+	})
+
+	app.Get("/me", func(c *fiber.Ctx) error {
+
+		token := c.Cookies("42session")
+
+		if token == "" {
+			return c.SendString("Unauthorized")
+		}
+
 		// Get 'me' from 42 api
 		client := &http.Client{}
 		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
@@ -120,7 +157,7 @@ func main() {
 			return c.SendString("Couldn't create request")
 		}
 
-		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
+		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", token))
 		respMe, err := client.Do(reqMe)
 
 		if err != nil {
@@ -131,79 +168,30 @@ func main() {
 		defer respMe.Body.Close()
 		bodyMe, err := io.ReadAll(respMe.Body)
 
-		if err != nil {
-			return c.SendString("Couldn't read 42 api response")
-		}
-
-		projects := struct {
-			Items []struct {
-				Id string `json:"id"`
-				Name string `json:"slug"`
-			}
-		}{}
-		
-		totalProjects := struct {
-			Items []struct {
-				Id string `json:"id"`
-				Name string `json:"slug"`
-			}
-		}{}
-
-		fmt.Println("TOKEN", authToken)
-		for i := 5; i < 12; i++ {
-			url := "https://api.intra.42.fr/v2/cursus/21/projects?page=" + strconv.Itoa(i)
-			fmt.Println("url =", string(url))
-			reqProjects, err := http.NewRequest("GET", url, nil)
-
-			if err != nil {
-				return c.SendString("Couldn't create request")
-			}
-
-			reqProjects.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
-			respProjects, err := client.Do(reqProjects)
-			
-			if err != nil {
-				return c.SendString("42 api request failed")
-			}
-
-			// Read response
-			defer respProjects.Body.Close()
-			bodyProjects, err := io.ReadAll(respProjects.Body)
-
-			if err != nil { // don't forget handle errors
-
-				return c.SendString("Couldn't Read response")
-			}
-			
-			err2 := json.Unmarshal(bodyProjects, &projects.Items)
-
-			fmt.Println("projects")
-			fmt.Println(projects)
-			fmt.Println("projects above")
-			
-			if err2 != nil { // don't forget handle errors
-
-				return c.SendString("Couldn't unmarshall response")
-			}
-			fmt.Println("here ???")
-
-			for p := range projects.Items {
-				fmt.Printf("Project id = %s", projects.Items[p].Id)
-				fmt.Println()
-				fmt.Printf("Project Name = %s", projects.Items[p].Name)
-				fmt.Println()
-			}
-
-			mergo.Merge(&totalProjects.Items, projects.Items)
-		}
-		
-		fmt.Println("totalResponse  ok")
-		
-
-		
-	
 		// Show the primitive json
 		return c.SendString(string(bodyMe))
+	})
+
+	app.Get("/projects", func(c *fiber.Ctx) error {
+		token := c.Cookies("42session")
+
+		if token == "" {
+			return c.SendString("Unauthorized")
+		}
+
+		projects, err := getProjects(token)
+
+		if err != nil {
+			return c.SendString("Error while getting projects")
+		}
+
+		output := ""
+
+		for _, proj := range projects {
+			output += fmt.Sprintf("%d — %s\n", proj.ID, proj.Name)
+		}
+
+		return c.SendString(output)
 	})
 
 	app.Listen(":3000")
