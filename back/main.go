@@ -10,9 +10,10 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
-	"back/project"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+	
+	"github.com/thervieu/42diploma/back/project"
 
 )
 
