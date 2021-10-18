@@ -131,14 +131,31 @@ func main() {
 			return c.SendString("42 api call failed")
 		}
 
-		// Save token in encrypted cookie
-		c.Cookie(&fiber.Cookie{
-			Name:  "42session",
-			Value: authToken})
+		// Get 'me' from 42 api
+		client := &http.Client{}
+		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
 
-		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
+		if err != nil {
+			return c.SendString("Couldn't create request")
+		}
 
-		return c.SendString("Success")
+		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
+		respMe, err := client.Do(reqMe)
+
+		if err != nil {
+			return c.SendString("42 api request failed")
+		}
+
+		// Read response
+		defer respMe.Body.Close()
+		bodyMe, err := io.ReadAll(respMe.Body)
+
+		if err != nil {
+			return c.SendString("Couldn't read response body")
+		}
+
+		// Show the primitive json
+		return c.SendString(string(bodyMe))
 	})
 
 	app.Get("/me", func(c *fiber.Ctx) error {
