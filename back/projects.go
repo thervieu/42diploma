@@ -31,7 +31,7 @@ type Project struct {
 	ProjectSessions []ProjectSessions `json:"project_sessions";gorm:"foreignkey:ProjectID"`
 }
 
-func InitialMigration() {
+func InitialMigration() *gorm.DB {
 	DB, err = gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 
 	if err != nil {
@@ -40,6 +40,7 @@ func InitialMigration() {
 	}
 	DB.AutoMigrate(&Project{})
 	DB.AutoMigrate(&ProjectSessions{})
+	return DB
 }
 
 func GetProjects(c *fiber.Ctx) error {

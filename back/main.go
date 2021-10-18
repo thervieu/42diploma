@@ -86,10 +86,7 @@ func getAuthTokenServer(CLIENT_ID string, CLIENT_SECRET string) (string, error) 
 }
 
 func main() {
-	e := os.Remove("gorm.db")
-	if e != nil {
-		log.Fatal(e)
-	}
+
 	CLIENT_ID := os.Getenv("CLIENT_ID")
 	if CLIENT_ID == "" {
 		log.Fatal("Please set the CLIENT_ID env variable to your 42 API client ID")
@@ -99,7 +96,9 @@ func main() {
 	if CLIENT_SECRET == "" {
 		log.Fatal("Please set the CLIENT_SECRET env variable to your 42 API client ID")
 	}
-	InitialMigration()
+
+	db := InitialMigration()
+
 	app := fiber.New()
 	app.Use(cors.New()) // Or extend your config for customization
 	// Default encrypted cookie middleware config
@@ -111,7 +110,13 @@ func main() {
 		return
 	}
 
-	initProjects(token)
+	r := db.Find(&Project{})
+	if r.RowsAffected <= 0 { // If we don't have any projects loaded, load them
+		log.Println("No projects present in the database, downloading")
+		initProjects(token)
+	} else {
+		log.Println("Projects already present in the database, skipping init")
+	}
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
@@ -209,7 +214,14 @@ func main() {
 		if err != nil {
 			c.SendString(fmt.Sprint(err))
 		}
-		return c.SendString(fmt.Sprint(myData))
+
+		// find projects not in done
+		var newProjects []Project
+		db.Not(map[string]interface{}{"id": myData.ProjectsDone}).Find(&newProjects)
+
+		// TODO get their xp
+
+		return c.SendString(fmt.Sprint(newProjects))
 	})
 
 	app.Listen(":3000")
