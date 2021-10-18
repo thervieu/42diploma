@@ -12,8 +12,8 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
-	
-	"github.com/thervieu/42diploma/back/project"
+
+	"github.com/thervieu/42diploma/back/project@18cff52fd09c352514b29a1e1afb9969eeeec2f2"
 
 )
 
