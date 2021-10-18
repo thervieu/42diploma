@@ -33,9 +33,12 @@ async function process42ApiRedirect(code){
     },
     body: JSON.stringify(data),
   });
+  console.log("response");
+  console.log(response);
   if (!response.ok)
     return null;
   const jsonData = await response.json();
+  console.log("jsonData");
   console.log(jsonData);
   return jsonData;
 }
@@ -45,12 +48,6 @@ async function set42User(setUser, setProjectsDone, code) {
 
   if (authUser) {
     setUser(new User(authUser.id, authUser.login, authUser.cursus_users[1].level));
-    // let project_id = 0;
-    // let projectsTmp;
-    // for (let i = 0; project_id !== LIBFT_ID; i++)
-    // {
-    //   projectsTmp += new Project(authUser.projects_users[i])
-    // }
     setProjectsDone(authUser.projects_users);
   }
 }

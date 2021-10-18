@@ -10,8 +10,10 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"back/project"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
+
 )
 
 const redirect_url string = "http://127.0.0.1:3001"
@@ -58,6 +60,7 @@ func getAuthToken(CLIENT_ID string, CLIENT_SECRET string, code string, redirect_
 }
 
 func main() {
+	project.InitialMigration()
 	CLIENT_ID := os.Getenv("CLIENT_ID")
 	if CLIENT_ID == "" {
 		log.Fatal("Please set the CLIENT_ID env variable to your 42 API client ID")
@@ -74,6 +77,7 @@ func main() {
 	// Default encrypted cookie middleware config
 	app.Use(encryptcookie.New(encryptcookie.Config{ // this re-creates keys each time
 		Key: encryptcookie.GenerateKey()})) // later we should use a random, but stable value
+	
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
@@ -113,6 +117,9 @@ func main() {
 		return c.SendString(fmt.Sprint("Your token is: ", authToken))
 	})
 
+	app.Get("/projects" project.GetProjects)
+	app.Post("/projects", project.SaveProjects)
+
 	// Get code and trade it for auth token
 	app.Post("/auth", func(c *fiber.Ctx) error {
 		// Capture 42 redirect with auth code in Body
@@ -131,24 +138,6 @@ func main() {
 			return c.SendString("42 api call failed")
 		}
 
-		// Save token in encrypted cookie
-		c.Cookie(&fiber.Cookie{
-			Name:  "42session",
-			Value: authToken})
-
-		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
-
-		return c.SendString("Success")
-	})
-
-	app.Get("/me", func(c *fiber.Ctx) error {
-
-		token := c.Cookies("42session")
-
-		if token == "" {
-			return c.SendString("Unauthorized")
-		}
-
 		// Get 'me' from 42 api
 		client := &http.Client{}
 		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
@@ -157,7 +146,7 @@ func main() {
 			return c.SendString("Couldn't create request")
 		}
 
-		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", token))
+		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
 		respMe, err := client.Do(reqMe)
 
 		if err != nil {
@@ -172,27 +161,27 @@ func main() {
 		return c.SendString(string(bodyMe))
 	})
 
-	app.Get("/projects", func(c *fiber.Ctx) error {
-		token := c.Cookies("42session")
+	// app.Get("/projects", func(c *fiber.Ctx) error {
+	// 	token := c.Cookies("42session")
 
-		if token == "" {
-			return c.SendString("Unauthorized")
-		}
+	// 	if token == "" {
+	// 		return c.SendString("Unauthorized")
+	// 	}
 
-		projects, err := getProjects(token)
+	// 	projects, err := getProjects(token)
 
-		if err != nil {
-			return c.SendString("Error while getting projects")
-		}
+	// 	if err != nil {
+	// 		return c.SendString("Error while getting projects")
+	// 	}
 
-		output := ""
+	// 	output := ""
 
-		for _, proj := range projects {
-			output += fmt.Sprintf("%d — %s\n", proj.ID, proj.Name)
-		}
+	// 	for _, proj := range projects {
+	// 		output += fmt.Sprintf("%d — %s\n", proj.ID, proj.Name)
+	// 	}
 
-		return c.SendString(output)
-	})
+	// 	return c.SendString(output)
+	// })
 
 	app.Listen(":3000")
 }
