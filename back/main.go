@@ -12,9 +12,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
-
-	"github.com/thervieu/42diploma/back/project@18cff52fd09c352514b29a1e1afb9969eeeec2f2"
-
 )
 
 const redirect_url string = "http://127.0.0.1:3001"
@@ -60,8 +57,35 @@ func getAuthToken(CLIENT_ID string, CLIENT_SECRET string, code string, redirect_
 	return authResp.AccessToken, nil
 }
 
+// getAuthToken exchanges a 42 redirect code for a 42 API auth token
+func getAuthTokenServer(CLIENT_ID string, CLIENT_SECRET string) (string, error) {
+	// Hit 42 api
+	resp, err := http.PostForm("https://api.intra.42.fr/oauth/token",
+		url.Values{
+			"grant_type":    {"client_credentials"},
+			"client_id":     {CLIENT_ID},
+			"client_secret": {CLIENT_SECRET}})
+
+	if err != nil {
+		return "", err
+	}
+
+	fmt.Println(resp)
+
+	// Read response as JSON
+	defer resp.Body.Close()
+
+	authResp := new(AuthResponse)
+	err = json.NewDecoder(resp.Body).Decode(authResp)
+
+	if err != nil {
+		return "", err
+	}
+
+	return authResp.AccessToken, nil
+}
+
 func main() {
-	project.InitialMigration()
 	CLIENT_ID := os.Getenv("CLIENT_ID")
 	if CLIENT_ID == "" {
 		log.Fatal("Please set the CLIENT_ID env variable to your 42 API client ID")
@@ -71,14 +95,20 @@ func main() {
 	if CLIENT_SECRET == "" {
 		log.Fatal("Please set the CLIENT_SECRET env variable to your 42 API client ID")
 	}
-
+	InitialMigration()
 	app := fiber.New()
-
 	app.Use(cors.New()) // Or extend your config for customization
 	// Default encrypted cookie middleware config
 	app.Use(encryptcookie.New(encryptcookie.Config{ // this re-creates keys each time
 		Key: encryptcookie.GenerateKey()})) // later we should use a random, but stable value
 	
+	token, err := getAuthTokenServer(CLIENT_ID, CLIENT_SECRET)
+
+	if err != nil {
+		return 
+	}
+
+	initProjects(token)
 
 	app.Get("/", func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML) // to display as html
@@ -118,9 +148,6 @@ func main() {
 		return c.SendString(fmt.Sprint("Your token is: ", authToken))
 	})
 
-	app.Get("/projects" project.GetProjects)
-	app.Post("/projects", project.SaveProjects)
-
 	// Get code and trade it for auth token
 	app.Post("/auth", func(c *fiber.Ctx) error {
 		// Capture 42 redirect with auth code in Body
@@ -138,7 +165,7 @@ func main() {
 		if err != nil {
 			return c.SendString("42 api call failed")
 		}
-
+		
 		// Get 'me' from 42 api
 		client := &http.Client{}
 		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
@@ -162,27 +189,11 @@ func main() {
 		return c.SendString(string(bodyMe))
 	})
 
-	// app.Get("/projects", func(c *fiber.Ctx) error {
-	// 	token := c.Cookies("42session")
-
-	// 	if token == "" {
-	// 		return c.SendString("Unauthorized")
-	// 	}
-
-	// 	projects, err := getProjects(token)
-
-	// 	if err != nil {
-	// 		return c.SendString("Error while getting projects")
-	// 	}
-
-	// 	output := ""
-
-	// 	for _, proj := range projects {
-	// 		output += fmt.Sprintf("%d — %s\n", proj.ID, proj.Name)
-	// 	}
-
-	// 	return c.SendString(output)
-	// })
+	app.Get("/projects", func(c *fiber.Ctx) error {
+		projects := GetProjects(c)
+		
+		return projects
+	})
 
 	app.Listen(":3000")
 }
