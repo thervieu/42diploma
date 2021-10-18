@@ -87,9 +87,9 @@ func getAuthTokenServer(CLIENT_ID string, CLIENT_SECRET string) (string, error) 
 
 func main() {
 	e := os.Remove("gorm.db")
-    if e != nil {
-        log.Fatal(e)
-    }
+	if e != nil {
+		log.Fatal(e)
+	}
 	CLIENT_ID := os.Getenv("CLIENT_ID")
 	if CLIENT_ID == "" {
 		log.Fatal("Please set the CLIENT_ID env variable to your 42 API client ID")
@@ -105,11 +105,10 @@ func main() {
 	// Default encrypted cookie middleware config
 	app.Use(encryptcookie.New(encryptcookie.Config{ // this re-creates keys each time
 		Key: encryptcookie.GenerateKey()})) // later we should use a random, but stable value
-	
 	token, err := getAuthTokenServer(CLIENT_ID, CLIENT_SECRET)
 
 	if err != nil {
-		return 
+		return
 	}
 
 	initProjects(token)
@@ -169,7 +168,7 @@ func main() {
 		if err != nil {
 			return c.SendString("42 api call failed")
 		}
-		
+
 		// Get 'me' from 42 api
 		client := &http.Client{}
 		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
@@ -195,8 +194,22 @@ func main() {
 
 	app.Get("/projects", func(c *fiber.Ctx) error {
 		projects := GetProjects(c)
-		
+
 		return projects
+	})
+
+	app.Get("/testUserData", func(c *fiber.Ctx) error {
+
+		token := c.Cookies("42session")
+
+		if token == "" {
+			return c.SendString("Please first get a token through demo auth")
+		}
+		myData, err := GetUserData(token)
+		if err != nil {
+			c.SendString(fmt.Sprint(err))
+		}
+		return c.SendString(fmt.Sprint(myData))
 	})
 
 	app.Listen(":3000")

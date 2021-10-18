@@ -3,9 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"time"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/driver/sqlite"
@@ -18,16 +18,16 @@ var err error
 const DNS = "root:admin@tcp(127.0.0.1:3306)/godb?charset=utf8mb4&parseTime=True&loc=Local"
 
 type ProjectSessions struct {
-	ProjectID		 int		   `json:"project_id"`
-	ID               int           `json:"id"`
-	CampusID               int     `json:"campus_id"`
-	Difficulty       int           `json:"difficulty"`
-	UpdatedAt        time.Time     `json:"updated_at"`
+	ProjectID  int       `json:"project_id"`
+	ID         int       `json:"id"`
+	CampusID   int       `json:"campus_id"`
+	Difficulty int       `json:"difficulty"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 type Project struct {
 	ID              int               `json:"id"`
 	Slug            string            `json:"slug"`
-	XP				int				  `json:"xp"`
+	XP              int               `json:"xp"`
 	ProjectSessions []ProjectSessions `json:"project_sessions";gorm:"foreignkey:ProjectID"`
 }
 
@@ -65,7 +65,7 @@ func apiGet(authToken string, url string) (*http.Response, error) {
 
 	client := &http.Client{}
 
-	req.Header.Add("Authorization", "Bearer " + authToken)
+	req.Header.Add("Authorization", "Bearer "+authToken)
 	resp, err := client.Do(req)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func getPage(authToken string, baseUrl string, page int) (*http.Response, error)
 
 // Get all projects from 42 api
 func initProjects(authToken string) ([]Project, error) {
-	
+
 	baseUrl := "https://api.intra.42.fr/v2/cursus/21/projects"
 
 	var allProjects []Project
