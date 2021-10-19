@@ -120,38 +120,5 @@ func initProjects(authToken string) ([]Project, error) {
 		allProjects = append(allProjects, p...)
 	}
 
-	// var savedProjects []Project
-	// for o := 0 ; o < len(allProjects) ; o++ {
-	// 	fmt.Println("o = " + string(o))
-	// 	fmt.Println(allProjects[o])
-	// 	xp := 0
-	// 	first := true
-	// 	allPS := allProjects[o].ProjectSessions
-	// 	var last_updated time.Time
-	// 	for ps := 0 ; ps < len(allPS) ; ps++ {
-	// 		if first {
-	// 			last_updated = allPS[ps].UpdatedAt
-	// 			xp = allPS[ps].Difficulty
-	// 			first = false
-	// 		} else {
-	// 			if allPS[ps].UpdatedAt.After(last_updated) {
-	// 				last_updated = allPS[ps].UpdatedAt
-	// 				xp = allPS[ps].Difficulty
-	// 			}
-	// 		}
-	// 	}
-	// 	if xp != 0 {
-	// 		var pSave Project
-	// 		pSave.ID = allProjects[o].ID
-	// 		pSave.Slug = allProjects[o].Slug
-	// 		pSave.XP = xp
-
-	// 		fmt.Println("pSave = " + string(o))
-	// 		fmt.Println(pSave)
-	// 		savedProjects = append(savedProjects, pSave)
-	// 	}
-	// }
-
-	// fmt.Println(allProjects)
 	return SaveProjects(allProjects), nil
 }

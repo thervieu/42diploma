@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -174,27 +173,14 @@ func main() {
 			return c.SendString("42 api call failed")
 		}
 
-		// Get 'me' from 42 api
-		client := &http.Client{}
-		reqMe, err := http.NewRequest("GET", "https://api.intra.42.fr/v2/me", nil)
-
+		myData, err := GetUserData(db, authToken)
 		if err != nil {
-			return c.SendString("Couldn't create request")
+			c.SendString(fmt.Sprint(err))
 		}
+		fmt.Println("myData")
+		fmt.Println(myData)
 
-		reqMe.Header.Add("Authorization", fmt.Sprint("Bearer ", authToken))
-		respMe, err := client.Do(reqMe)
-
-		if err != nil {
-			return c.SendString("42 api request failed")
-		}
-
-		// Read response
-		defer respMe.Body.Close()
-		bodyMe, err := io.ReadAll(respMe.Body)
-
-		// Show the primitive json
-		return c.SendString(string(bodyMe))
+		return c.SendString(fmt.Sprint(myData))
 	})
 
 	app.Get("/projects", func(c *fiber.Ctx) error {
@@ -210,18 +196,12 @@ func main() {
 		if token == "" {
 			return c.SendString("Please first get a token through demo auth")
 		}
-		myData, err := GetUserData(token)
+		myData, err := GetUserData(db, token)
 		if err != nil {
 			c.SendString(fmt.Sprint(err))
 		}
 
-		// find projects not in done
-		var newProjects []Project
-		db.Not(map[string]interface{}{"id": myData.ProjectsDone}).Find(&newProjects)
-
-		// TODO get their xp
-
-		return c.SendString(fmt.Sprint(newProjects))
+		return c.SendString(fmt.Sprint(myData))
 	})
 
 	app.Listen(":3000")

@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"time"
+	"fmt"
+	"strings"
+	"gorm.io/gorm"
 )
 
 // The response of /me from 42 api
@@ -193,25 +195,21 @@ type CampusUsers struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type ProjectUserData struct {
+	ProjectID   int 		`json:"project_id"`
+	ID			int			`json:"id"`
+	Slug        string		`json:"slug"`
+	XP			int			`json:"xp"`
+}
 // The data that is necessary to us
 type UserData struct {
-	Login        string
-	CampusID     int
-	ProjectsDone []int
-}
-
-// primaryCampusID finds the id of the primary campus in a slice of CampusUsers
-func primaryCampusID(campUs []CampusUsers) (int, error) {
-	for _, cu := range campUs {
-		if cu.IsPrimary {
-			return cu.CampusID, nil
-		}
-	}
-	return -1, errors.New("couldn't find primary campus")
+	Login        string				`json:"login"`
+	Level        float64			`json:"level"`
+	Projects     []ProjectUserData	`json:"projects";gorm:"foreignkey:ProjectID"`
 }
 
 // projectsDone returns a slice with IDs of the projects done by user
-func projectsDone(projUs []ProjectsUsers) []int {
+func ProjectsDone(projUs []ProjectsUsers) []int {
 	ret := make([]int, len(projUs))
 
 	for i, pu := range projUs {
@@ -220,9 +218,54 @@ func projectsDone(projUs []ProjectsUsers) []int {
 	return ret
 }
 
+// ProjectsWXP returns a slice w/ Project not done by user and their xp
+// determined by 
+func ProjectsWXP(db *gorm.DB, pNotDone []Project) []ProjectUserData {
+	var rtnProjects []ProjectUserData
+	for o := range pNotDone {
+		xp := 0
+		first := true
+		var allPS []ProjectSessions
+		db.Model(&pNotDone[o]).Association("ProjectSessions").Find(&allPS)
+
+		var last_updated time.Time
+		for ps := 0 ; ps < len(allPS) ; ps++ {
+				if first {
+					last_updated = allPS[ps].UpdatedAt
+					xp = allPS[ps].Difficulty
+					first = false
+				} else {
+					if allPS[ps].UpdatedAt.After(last_updated) {
+						last_updated = allPS[ps].UpdatedAt
+						xp = allPS[ps].Difficulty
+					}
+				}
+		}
+		if xp != 0 {
+			var pSave ProjectUserData
+			pSave.ID = pNotDone[o].ID
+			pSave.Slug = pNotDone[o].Slug
+			pSave.XP = xp
+
+			rtnProjects = append(rtnProjects, pSave)
+		}
+	}
+
+	var finalProjects []ProjectUserData
+	for o := range rtnProjects {
+		if !strings.Contains(rtnProjects[o].Slug, "piscine") {
+			finalProjects = append(finalProjects, rtnProjects[o])
+		}
+	}
+
+	fmt.Println("finalProjects")
+	fmt.Println(finalProjects)
+	return finalProjects
+}
+
 // GetUserData returns the data we will need about the user, given their
 // authToken
-func GetUserData(authToken string) (UserData, error) {
+func GetUserData(db *gorm.DB, authToken string) (UserData, error) {
 	// Ask 42 api for our data
 	resp, err := apiGet(authToken, "https://api.intra.42.fr/v2/me")
 	if err != nil {
@@ -236,15 +279,17 @@ func GetUserData(authToken string) (UserData, error) {
 		return UserData{}, err
 	}
 
-	// Find our primary campus id
-	campusID, err := primaryCampusID(me.CampusUsers) // could also be done through me.Campus[0]
-	if err != nil {
-		return UserData{}, err
-	}
+	projectsDone := ProjectsDone(me.ProjectsUsers)
+	
+	// find projects not in done
+	var projectNotDone []Project
+	db.Not(map[string]interface{}{"id": projectsDone}).Find(&projectNotDone)
+	
+	rtnProjects := ProjectsWXP(db, projectNotDone)
 
 	return UserData{
-		Login:        me.Login,
-		CampusID:     campusID,
-		ProjectsDone: projectsDone(me.ProjectsUsers),
+		Login:    me.Login,
+		Level:    me.CursusUsers[1].Level,
+		Projects: rtnProjects,
 	}, nil
 }

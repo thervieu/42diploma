@@ -4,8 +4,6 @@ async function Login() {
     let STATE = uuid.v4();
     let REDIRECT_URL = 'http://127.0.0.1:3001';
     let CLIENT_ID;
-    console.log("process.env");
-    console.log(process.env);
     if (process.env.REACT_APP_CLIENT_ID)
         CLIENT_ID = process.env.REACT_APP_CLIENT_ID;
     else

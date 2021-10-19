@@ -7,8 +7,7 @@ import Projects from './components/Projects.js'
 import BarChart from './components/BarChart.js'
 
 export class User {
-  constructor(id, name, xp) {
-    this.id = id;
+  constructor(name, xp) {
     this.name = name;
     this.xp = xp;
   }
@@ -33,10 +32,11 @@ async function process42ApiRedirect(code){
     },
     body: JSON.stringify(data),
   });
-  console.log("response");
-  console.log(response);
   if (!response.ok)
     return null;
+  console.log("response");
+  console.log(response);
+  console.log("response after");
   const jsonData = await response.json();
   console.log("jsonData");
   console.log(jsonData);
@@ -44,11 +44,11 @@ async function process42ApiRedirect(code){
 }
 
 async function set42User(setUser, setProjectsDone, code) {
-  let authUser = await process42ApiRedirect(code);
+  let UserData = await process42ApiRedirect(code);
 
-  if (authUser) {
-    setUser(new User(authUser.id, authUser.login, authUser.cursus_users[1].level));
-    setProjectsDone(authUser.projects_users);
+  if (UserData) {
+    setUser(new User(UserData.Login, UserData.Level));
+    setProjectsDone(UserData.Projects);
   }
 }
 
