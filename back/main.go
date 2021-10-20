@@ -177,10 +177,12 @@ func main() {
 		if err != nil {
 			c.SendString(fmt.Sprint(err))
 		}
-		fmt.Println("myData")
-		fmt.Println(myData)
 
-		return c.SendString(fmt.Sprint(myData))
+		rtn, err := json.Marshal(myData)
+		if err != nil {
+			return c.SendString(fmt.Sprint(err))
+		}
+		return c.SendString(string(rtn))
 	})
 
 	app.Get("/projects", func(c *fiber.Ctx) error {
@@ -196,12 +198,18 @@ func main() {
 		if token == "" {
 			return c.SendString("Please first get a token through demo auth")
 		}
+
 		myData, err := GetUserData(db, token)
 		if err != nil {
 			c.SendString(fmt.Sprint(err))
 		}
-
-		return c.SendString(fmt.Sprint(myData))
+		
+		rtn, err := json.Marshal(&myData)
+		if err != nil {
+			return c.SendString(fmt.Sprint(err))
+		}
+		fmt.Println(fmt.Sprint(rtn))
+		return c.SendString(fmt.Sprint(rtn))
 	})
 
 	app.Listen(":3000")

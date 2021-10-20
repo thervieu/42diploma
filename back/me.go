@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"time"
-	"fmt"
 	"strings"
 	"gorm.io/gorm"
 )
@@ -258,8 +257,6 @@ func ProjectsWXP(db *gorm.DB, pNotDone []Project) []ProjectUserData {
 		}
 	}
 
-	fmt.Println("finalProjects")
-	fmt.Println(finalProjects)
 	return finalProjects
 }
 

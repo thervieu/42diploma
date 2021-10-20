@@ -2,6 +2,12 @@ export default function Projects(props) {
 
     return (
     <div>
-        <div>Projects</div>
+        <table>
+            {props.projectsDoable.map(item => {
+                return (
+                    <td>{item.slug}</td>
+                )
+            })}
+        </table>
     </div> );
 }
