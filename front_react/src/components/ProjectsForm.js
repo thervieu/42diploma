@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { Project } from '../App.js'
+
 import React from 'react'
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
@@ -11,14 +13,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Button from '@material-ui/core/Button';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 
-export default function Projects(props) {
-  // let projects;
-  // props.projectsDoable.forEach(function(item) {
-  //     projects.push({ name: item.slug, xp: item.xp})
-  //   });
-  // console.log("projects");
-  // console.log(projects);
-  const [value, setValue] = useState(null);
+export default function ProjectsForm(props) {
+  const [index, setIndex] = useState(null);
   const [percentage, setPercentage] = React.useState(100);
   const [checked, setChecked] = React.useState(false);
 
@@ -45,16 +41,9 @@ export default function Projects(props) {
   return (
     <div>
       <Autocomplete
-
-        // I think we can do this once we implement the button to count the project
-        // onChange={(e, slug) => {for (var i = 0; i < props.projectsDoable.length; i++) {
-        //   if (slug === props.projectsDoable[i].slug)
-        //       props.projectsDone.push({"name":slug, "xp":props.projectsDone[i].xp});
-        // }}}
-
-        value={value}
+        value={index}
         onChange={(event, newValue) => {
-          setValue(newValue);
+          setIndex(newValue);
         }}
         disablePortal
         id="autocomplete"
@@ -102,7 +91,12 @@ export default function Projects(props) {
       <FormControlLabel control={<Checkbox color="primary" onChange={handleCheckBox} />} label="Is my coa first ?" />
       <Button variant="contained" color="primary"
         onClick={() => {
-          // handleClick(); // -> addProject
+          if (index !== null) {
+            if (props.projects === null)
+              props.setProjects([new Project(props.projectsDoable[index].slug, props.projectsDoable[index].xp, percentage, checked), ]);
+            else
+              props.setProjects([...props.projects, new Project(props.projectsDoable[index].slug, props.projectsDoable[index].xp, percentage, checked)])
+          }
         }}
       >
         Submit Project

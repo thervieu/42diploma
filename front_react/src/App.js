@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import Header from './components/Header.js'
 import CurrentLevel from './components/CurrentLevel.js'
-import Projects from './components/Projects.js'
-import BarChart from './components/BarChart.js'
+import Projects from './components/ProjectsForm.js'
+import ProjectsList from './components/ProjectsList.js'
 
 export class User {
   constructor(name, xp) {
@@ -15,10 +15,11 @@ export class User {
 }
 
 export class Project {
-  constructor(name, xp) {
+  constructor(name, xp, percentage, checked) {
     this.name = name;
     this.xp = xp;
-    this.percentage = 100;
+    this.percentage = percentage;
+    this.checked = checked;
   }
 }
 
@@ -35,9 +36,9 @@ async function process42ApiRedirect(code) {
   });
   if (!response.ok)
     return null;
-  
+
   const jsonData = await response.json();
-  
+
   return jsonData;
 }
 
@@ -52,9 +53,8 @@ async function set42User(setUser, setProjectsDoable, code) {
 
 function App() {
   const [user, setUser] = useState(null);
-  const [level, setLevel] = useState(null);
+  const [projects, setProjects] = useState(null);
   const [projectsDoable, setProjectsDoable] = useState(null);
-  let projectsDone;
   let history = useHistory();
   const { search } = useLocation();
 
@@ -69,6 +69,12 @@ function App() {
     }
   }, [search, history]);
 
+  useEffect(() => {
+    if (projects !== null)
+      console.log("projects");
+    console.log(projects);
+  }, [projects]);
+
   return (
     // <div className="App" style={{ backgroundImage: `url(${background})` }}>
     <div className="App">
@@ -76,13 +82,18 @@ function App() {
       {user === null ? <div> Please Sign in using the top right button (42Auth). </div>
         :
         <div>
-          <CurrentLevel user={user} />
+          < CurrentLevel user={user} />
           {projectsDoable !== null ?
             <div>
-              <Projects user={user} setLevel={setLevel} projectsDoable={projectsDoable} projectsDone={projectsDone}/>
-              <BarChart user={user} level={level} />
+              <Projects user={user} projects={projects} setProjects={setProjects}
+                projectsDoable={projectsDoable} />
+              {projects !== null ?
+                <ProjectsList projects={projects} setProjects={setProjects} />
+                :
+                <div> No projects chosen </div>}
             </div>
-            : <div> No projects for now </div>}
+            :
+            <div> No projects for now </div>}
         </div>
       }
     </div>

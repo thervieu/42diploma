@@ -11,16 +11,20 @@ async function Login() {
     window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URL}&scope=public&state=${STATE}&response_type=code`;
 }
 
-function setAll(setUser, setProjectsDoable)
-{
+function setAll(setUser, setProjectsDoable) {
     setUser(null);
     setProjectsDoable(null);
 }
 
 export default function Header(props) {
-    const user = props.user;
-
-    if (user === null)
-        return <button onClick={Login}>Sign in</button>
-    return <button onClick={() => setAll(props.setUser, props.setProjectsDoable)}>Sign out</button>
+    return (
+        <div>
+            <div>Logo (top left)</div>
+            {props.user === null ?
+                <button onClick={Login}>Sign in</button>
+                :
+                <button onClick={() => setAll(props.setUser, props.setProjectsDoable)}>Sign out</button>
+            }
+        </div>
+    );
 }
