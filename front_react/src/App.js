@@ -70,6 +70,8 @@ function App() {
     }
   }, [search, history]);
 
+  console.log("projects");
+  console.log(projects);
   return (
     // <div className="App" style={{ backgroundImage: `url(${background})` }}>
     <div className="App">
@@ -85,7 +87,7 @@ function App() {
               {projects !== null && projects.length > 0 ?
                 <div>
                   <ProjectsList projects={projects} setProjects={setProjects} />
-                  <Calculate level={user.level} projects={projects} />
+                  <Calculate level={user.level} projects={projects} setProjects={setProjects} />
                 </div>
                 :
                 <div> No projects chosen </div>}

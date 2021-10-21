@@ -16,6 +16,7 @@ export default function ProjectsItem(props) {
     const [percentage, setPercentage] = React.useState(props.projects[props.index].percentage);
     const [checked, setChecked] = React.useState(props.projects[props.index].checked);
 
+    console.log("ProjectsItem");
     console.log(props.projects);
 
     const updateProjects = (newValue) => {
