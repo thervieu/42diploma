@@ -6,11 +6,12 @@ import Header from './components/Header.js'
 import CurrentLevel from './components/CurrentLevel.js'
 import Projects from './components/ProjectsForm.js'
 import ProjectsList from './components/ProjectsList.js'
+import Calculate from './components/Calculate.js'
 
 export class User {
-  constructor(name, xp) {
+  constructor(name, level) {
     this.name = name;
-    this.xp = xp;
+    this.level = level;
   }
 }
 
@@ -69,12 +70,6 @@ function App() {
     }
   }, [search, history]);
 
-  useEffect(() => {
-    if (projects !== null)
-      console.log("projects");
-    console.log(projects);
-  }, [projects]);
-
   return (
     // <div className="App" style={{ backgroundImage: `url(${background})` }}>
     <div className="App">
@@ -82,13 +77,16 @@ function App() {
       {user === null ? <div> Please Sign in using the top right button (42Auth). </div>
         :
         <div>
-          < CurrentLevel user={user} />
+          <CurrentLevel user={user} />
           {projectsDoable !== null ?
             <div>
               <Projects user={user} projects={projects} setProjects={setProjects}
                 projectsDoable={projectsDoable} />
-              {projects !== null ?
-                <ProjectsList projects={projects} setProjects={setProjects} />
+              {projects !== null && projects.length > 0 ?
+                <div>
+                  <ProjectsList projects={projects} setProjects={setProjects} />
+                  <Calculate level={user.level} projects={projects} />
+                </div>
                 :
                 <div> No projects chosen </div>}
             </div>
