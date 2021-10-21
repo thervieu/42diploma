@@ -6,9 +6,9 @@ export default function ProjectsList(props) {
     return (
         <List >
             {
-                props.projects.map(item => {
+                props.projects.map((item, index) => {
                     return (
-                        <ProjectItem project={item} projects={props.projects} setProjects={props.setProjects} />
+                        <ProjectItem index={index} project={item} projects={props.projects} setProjects={props.setProjects} />
                     );
                 })
             }
