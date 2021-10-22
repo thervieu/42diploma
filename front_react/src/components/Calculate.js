@@ -34,16 +34,18 @@ export default function Calculate(props) {
         1484070,
         -1
     ];
+    let xp_earned = 0;
     let lvlstart_int = parseInt(String(level));
     let fract_part = level - lvlstart_int;
     let xp_total = eplvl[lvlstart_int] +
-    ((eplvl[lvlstart_int + 1] - eplvl[lvlstart_int]) * fract_part);;
+        ((eplvl[lvlstart_int + 1] - eplvl[lvlstart_int]) * fract_part);;
     if (props.projects !== null && props.projects.length > 0) {
         for (let i = 0; i < props.projects.length; i++) {
             if (props.projects[i].percentage >= 100) {
                 lvlstart_int = parseInt(String(level));
                 fract_part = level - lvlstart_int;
                 let coabonus = props.projects[i].checked ? 1.042 : 1;
+                xp_earned += props.projects[i].xp * (props.projects[i].percentage / 100) * coabonus;
                 xp_total = props.projects[i].xp * (props.projects[i].percentage / 100) * coabonus
                     + eplvl[lvlstart_int] +
                     ((eplvl[lvlstart_int + 1] - eplvl[lvlstart_int]) * fract_part);
@@ -53,10 +55,16 @@ export default function Calculate(props) {
         }
     }
     return (
-            <div>
-                <div>Starting level : {props.level}</div>
-                <div>Ending level : {level.toFixed(2)}</div>
-                <div>You still have {parseInt(String(eplvl[21] - xp_total))} xp to go until level 21</div>
-            </div>
+        <div>
+            <div>XP Earned : {xp_earned}</div>
+            <div>Starting level : {props.level}</div>
+            {level < 21 ?
+                <div>
+                    <div>Ending level : {level.toFixed(2)}</div>
+                    <div>You still have {parseInt(String(eplvl[21] - xp_total))} XP to go until level 21</div>
+                </div>
+                :
+                <div>Congratulations ! You can now claim you diloma ! Go ahead and ask the staff :)</div>}
+        </div>
     );
 }
