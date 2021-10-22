@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import Header from './components/Header.js'
 import CurrentLevel from './components/CurrentLevel.js'
-import Projects from './components/ProjectsForm.js'
+import ProjectsForm from './components/ProjectsForm.js'
 import ProjectsList from './components/ProjectsList.js'
 import Calculate from './components/Calculate.js'
+import Box from '@material-ui/core/Box';
+import useWindowDimensions from './hooks/WindowHook.js'
 
 export class User {
   constructor(name, level) {
@@ -53,6 +55,7 @@ async function set42User(setUser, setProjectsDoable, code) {
 }
 
 function App() {
+  const { height, width } = useWindowDimensions();
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState(null);
   const [projectsDoable, setProjectsDoable] = useState(null);
@@ -70,8 +73,6 @@ function App() {
     }
   }, [search, history]);
 
-  console.log("projects");
-  console.log(projects);
   return (
     // <div className="App" style={{ backgroundImage: `url(${background})` }}>
     <div className="App">
@@ -82,13 +83,18 @@ function App() {
           <CurrentLevel user={user} />
           {projectsDoable !== null ?
             <div>
-              <Projects user={user} projects={projects} setProjects={setProjects}
+              <ProjectsForm user={user} projects={projects} setProjects={setProjects}
                 projectsDoable={projectsDoable} />
               {projects !== null && projects.length > 0 ?
-                <div>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(2, 1fr)'
+                  }}
+                >
                   <ProjectsList projects={projects} setProjects={setProjects} />
-                  <Calculate level={user.level} projects={projects} setProjects={setProjects} />
-                </div>
+                  <Calculate level={user.level} projects={projects} />
+                </Box>
                 :
                 <div> No projects chosen </div>}
             </div>

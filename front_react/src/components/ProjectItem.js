@@ -16,9 +16,6 @@ export default function ProjectsItem(props) {
     const [percentage, setPercentage] = React.useState(props.projects[props.index].percentage);
     const [checked, setChecked] = React.useState(props.projects[props.index].checked);
 
-    console.log("ProjectsItem");
-    console.log(props.projects);
-
     const updateProjects = (newValue) => {
         if (typeof newValue === 'boolean') {
             setChecked(newValue);
@@ -31,40 +28,29 @@ export default function ProjectsItem(props) {
             typeof newValue !== 'boolean' ? newValue : tmpProjects[props.index].percentage,
             typeof newValue === 'boolean' ? newValue : tmpProjects[props.index].checked,
         );
-        props.setProjects(tmpProjects);
-    };
-
-    const updateProjectsNewValue = (newValue) => {
-        let tmpProjects = props.projects;
-        tmpProjects[props.index] = new Project(tmpProjects[props.index].name, tmpProjects[props.index].xp,
-            newValue,
-            tmpProjects[props.index].checked);
-        props.setProjects(tmpProjects);
+        props.setProjects([...tmpProjects]);
     };
 
     const marks = [
         {
-          value: 0,
-          label: '0',
+            value: 0,
+            label: '0',
         },
         {
-          value: 100,
-          label: '100',
+            value: 100,
+            label: '100',
         },
         {
-          value: 125,
-          label: '125',
+            value: 125,
+            label: '125',
         },
-      ];
+    ];
 
     return (
         <ListItem >
             <ListItemText primary={props.project.name} />
-            <Box sx={{ width: 250 }}>
-                <Typography id="input-slider" gutterBottom>
-                    Validation Percentage
-                </Typography>
-                <Grid container spacing={2} alignItems="center">
+            <Box sx={{ width: 300 }}>
+                <Grid container spacing={3} alignItems="center">
                     <Grid item>
                         %
                     </Grid>
@@ -77,8 +63,7 @@ export default function ProjectsItem(props) {
                             max={125}
                             color={percentage >= 100 ? "primary" : "secondary"}
                             onChange={(e, newPercentage) => {
-                                setPercentage(newPercentage);
-                                updateProjectsNewValue(newPercentage);
+                                updateProjects(newPercentage);
                             }}
                             marks={marks}
                         />
@@ -88,14 +73,10 @@ export default function ProjectsItem(props) {
                             value={percentage}
                             size="small"
                             onChange={(e) => {
-                                if (e.target.value >= 0 && e.target.value <= 125)
-                                {
-                                    setPercentage(Number(e.target.value));
+                                if (e.target.value >= 0 && e.target.value <= 125) {
                                     updateProjects(Number(e.target.value));
                                 }
-                                if (e.target.value > 125)
-                                {
-                                    setPercentage(125);
+                                if (e.target.value > 125) {
                                     updateProjects(125);
                                 }
                             }}
@@ -108,20 +89,24 @@ export default function ProjectsItem(props) {
                             }}
                         />
                     </Grid>
+                    <Grid item>
+                        <FormControlLabel control={
+                            <Checkbox color="primary"
+                                value={checked}
+                                onChange={(e) => { updateProjects(!checked) }} />}
+                            label="Is my coa first ?"
+                        />
+                    </Grid>
+                    <Grid item>
+                    <Button variant="contained" color="primary"
+                        onClick={(e) => {
+                            props.setProjects(props.projects.filter(item => item !== props.project))
+                        }}>
+                        Remove
+                    </Button>
                 </Grid>
-            </Box>
-            <FormControlLabel control={
-                <Checkbox color="primary"
-                    value={checked}
-                    onChange={(e) => { updateProjects(!checked) }} />}
-                label="Is my coa first ?"
-            />
-            <Button variant="contained" color="primary"
-                onClick={(e) => {
-                    props.setProjects(props.projects.filter(item => item !== props.project))
-                }}>
-                Remove
-            </Button>
-        </ListItem>
+            </Grid>
+        </Box>
+        </ListItem >
     );
 }
