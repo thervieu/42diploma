@@ -1,7 +1,20 @@
-const uuid = require('uuid');
+import Grid from '@material-ui/core/Grid';
+import Typography from '@material-ui/core/Typography';
+import BookOutlinedIcon from '@mui/icons-material/BookOutlined';
+import Button from '@material-ui/core/Button';
+import { styled } from '@mui/material/styles';
+import { blue } from '@mui/material/colors';
+
+const ColorButton = styled(Button)(({ theme }) => ({
+    color: theme.palette.getContrastText(blue[600]),
+    backgroundColor: blue[600],
+    '&:hover': {
+      backgroundColor: blue[800],
+    },
+  }));
 
 async function Login() {
-    let STATE = uuid.v4();
+    let STATE = require('uuid').v4();
     let REDIRECT_URL = 'http://127.0.0.1:3001';
     let CLIENT_ID;
     if (process.env.REACT_APP_CLIENT_ID)
@@ -11,20 +24,36 @@ async function Login() {
     window.location.href = `https://api.intra.42.fr/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URL}&scope=public&state=${STATE}&response_type=code`;
 }
 
-function setAll(setUser, setProjectsDoable) {
-    setUser(null);
-    setProjectsDoable(null);
-}
-
 export default function Header(props) {
     return (
-        <div>
-            <div>Logo (top left)</div>
-            {props.user === null ?
-                <button onClick={Login}>Sign in</button>
-                :
-                <button onClick={() => setAll(props.setUser, props.setProjectsDoable)}>Sign out</button>
-            }
-        </div>
+        <Grid
+            container
+            direction="row"
+            justifyContent="space-between"
+            alignItems="flex-start"
+        >
+            <Grid item >
+            <Grid container direction="row">
+            <Grid item >
+                <BookOutlinedIcon fontSize="large" />
+            </Grid >
+            <Grid item >
+                <Typography variant="h5" component="div" gutterBottom>
+                    42diploma
+                </Typography>
+            </Grid >
+            </Grid >
+            </Grid >
+            <Grid item >
+                {props.user === null ?
+                    <ColorButton variant="contained" size="large" onClick={Login}>Sign in</ColorButton>
+                    :
+                    <ColorButton variant="contained" size="large" onClick={() => {
+                        props.setUser(null);
+                        props.setProjectsDoable(null);
+                    }}>Sign out</ColorButton>
+                }
+            </Grid >
+        </Grid>
     );
 }
