@@ -38,7 +38,7 @@ export default function Calculate(props) {
     let lvlstart_int = parseInt(String(level));
     let fract_part = level - lvlstart_int;
     let xp_total = eplvl[lvlstart_int] +
-        ((eplvl[lvlstart_int + 1] - eplvl[lvlstart_int]) * fract_part);;
+        ((eplvl[lvlstart_int + 1] - eplvl[lvlstart_int]) * fract_part);
     if (props.projects !== null && props.projects.length > 0) {
         for (let i = 0; i < props.projects.length; i++) {
             if (props.projects[i].percentage >= 100) {

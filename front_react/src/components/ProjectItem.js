@@ -1,5 +1,3 @@
-import React, { useState } from 'react'
-
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Button from '@material-ui/core/Button';
@@ -12,8 +10,8 @@ import FormControlLabel from '@material-ui/core/FormControlLabel';
 import { Project } from '../App';
 
 export default function ProjectsItem(props) {
-    const [percentage, setPercentage] = React.useState(props.projects[props.index].percentage);
-    const [checked, setChecked] = React.useState(props.projects[props.index].checked);
+    const [percentage, setPercentage] = useState(props.projects[props.index].percentage);
+    const [checked, setChecked] = useState(props.projects[props.index].checked);
 
     const updateProjects = (newValue) => {
         if (typeof newValue === 'boolean') {

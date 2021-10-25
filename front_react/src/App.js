@@ -1,5 +1,5 @@
 import './App.css';
-import background from './assets/background.png';
+// import background from './assets/background.png';
 import { useEffect, useState } from 'react'
 import { useLocation, useHistory } from 'react-router-dom'
 import Header from './components/Header.js'
@@ -8,7 +8,6 @@ import ProjectsForm from './components/ProjectsForm.js'
 import ProjectsList from './components/ProjectsList.js'
 import Calculate from './components/Calculate.js'
 import Box from '@material-ui/core/Box';
-import useWindowDimensions from './hooks/WindowHook.js'
 
 export class User {
   constructor(name, level) {
@@ -55,7 +54,6 @@ async function set42User(setUser, setProjectsDoable, code) {
 }
 
 function App() {
-  const { height, width } = useWindowDimensions();
   const [user, setUser] = useState(null);
   const [projects, setProjects] = useState(null);
   const [projectsDoable, setProjectsDoable] = useState(null);
