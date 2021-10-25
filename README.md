@@ -1,6 +1,6 @@
 # 42diploma
 
-Launch : run """npm run start""" in front directory and """go run ."""in back 
+Launch : run 'npm run start' in front directory and 'go run .' in back folder
 
 With this project, students from 42 school can easily see what level they will end up when doing available projects.
 
