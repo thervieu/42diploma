@@ -16,6 +16,6 @@ Frontend is not particularly finished as the end point of the project was the st
 
 Done by thervieu and ashishae.
 
-# Screenshot
+## Screenshot
 
 ![alt text](https://github.com/thervieu/42diploma/blob/master/mdImages/screenshot.png "Screenshot")
