@@ -12,7 +12,7 @@ With this project, students from 42 school can easily see what level they will e
 
 Doing this project, we used the 42 api (auth), learned a bit of Go and worked with Material-UI.
 
-Frontend is not particularly finished as the end point of the project was the start of ashishae's internship.
+Frontend is not particularly finished as the end point of the project was the start of Arseniy's internship.
 
 Done by thervieu and ashishae.
 
