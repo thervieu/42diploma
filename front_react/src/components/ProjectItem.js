@@ -1,5 +1,8 @@
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
+import { useState } from 'react'
+
+import { Project } from '../App';
+
+import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
 import Grid from '@material-ui/core/Grid';
@@ -7,7 +10,6 @@ import Slider from '@material-ui/core/Slider';
 import Input from '@material-ui/core/Input';
 import Checkbox from '@material-ui/core/Checkbox';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
-import { Project } from '../App';
 
 export default function ProjectsItem(props) {
     const [percentage, setPercentage] = useState(props.projects[props.index].percentage);
@@ -44,66 +46,66 @@ export default function ProjectsItem(props) {
     ];
 
     return (
-        <ListItem >
-            <ListItemText primary={props.project.name} />
-            <Box sx={{ width: 300 }}>
-                <Grid container spacing={3} alignItems="center">
-                    <Grid item>
-                        %
-                    </Grid>
-                    <Grid item xs>
-                        <Slider
-                            aria-labelledby="input-slider"
-                            value={percentage}
-                            step={1}
-                            min={0}
-                            max={125}
-                            color={percentage >= 100 ? "primary" : "secondary"}
-                            onChange={(e, newPercentage) => {
-                                updateProjects(newPercentage);
-                            }}
-                            marks={marks}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <Input
-                            value={percentage}
-                            size="small"
-                            onChange={(e) => {
-                                if (e.target.value >= 0 && e.target.value <= 125) {
-                                    updateProjects(Number(e.target.value));
-                                }
-                                if (e.target.value > 125) {
-                                    updateProjects(125);
-                                }
-                            }}
-                            inputProps={{
-                                step: 1,
-                                min: 0,
-                                max: 125,
-                                type: 'number',
-                                'aria-labelledby': 'input-slider',
-                            }}
-                        />
-                    </Grid>
-                    <Grid item>
-                        <FormControlLabel control={
-                            <Checkbox color="primary"
-                                value={checked}
-                                onChange={(e) => { updateProjects(!checked) }} />}
-                            label="Is my coa first ?"
-                        />
-                    </Grid>
-                    <Grid item>
-                    <Button variant="contained" color="primary"
-                        onClick={(e) => {
-                            props.setProjects(props.projects.filter(item => item !== props.project))
-                        }}>
-                        Remove
-                    </Button>
-                </Grid>
+        <Grid container spacing={3} alignItems="center" sx={{ margin: 2 }}>
+            <Grid item>
+                <Typography id="input-slider" >
+                    {props.project.name}
+                </Typography>
             </Grid>
-        </Box>
-        </ListItem >
+            <Grid item>
+                %
+            </Grid>
+            <Grid item xs>
+                <Slider
+                    aria-labelledby="input-slider"
+                    value={percentage}
+                    step={1}
+                    min={0}
+                    max={125}
+                    color={percentage >= 100 ? "primary" : "secondary"}
+                    onChange={(e, newPercentage) => {
+                        updateProjects(newPercentage);
+                    }}
+                    marks={marks}
+                />
+            </Grid>
+            <Grid item>
+                <Input
+                    value={percentage}
+                    size="small"
+                    onChange={(e) => {
+                        if (e.target.value >= 0 && e.target.value <= 125) {
+                            updateProjects(Number(e.target.value));
+                        }
+                        if (e.target.value > 125) {
+                            updateProjects(125);
+                        }
+                    }}
+                    inputProps={{
+                        step: 1,
+                        min: 0,
+                        max: 125,
+                        type: 'number',
+                        'aria-labelledby': 'input-slider',
+                    }}
+                />
+            </Grid>
+            <Grid item>
+                <FormControlLabel control={
+                    <Checkbox color="primary"
+                        value={checked}
+                        onChange={(e) => { updateProjects(!checked) }} />}
+                    label="Is my coa first ?"
+                />
+            </Grid>
+            <Grid item>
+                <Button variant="contained" color="primary"
+                    onClick={(e) => {
+                        props.setProjects(props.projects.filter(item => item !== props.project))
+                    }}>
+                    Remove
+                </Button>
+            </Grid>
+        </Grid>
     );
 }
